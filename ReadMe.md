@@ -87,7 +87,7 @@
 
 ## Conclusion
 
-successfully set up a SaaS application with subdomain support using Django and Django-Tenants. 
+We have set up a SaaS application with subdomain support using Django and Django-Tenants.
 
 For more details and advanced configurations, check the documentation.
 
