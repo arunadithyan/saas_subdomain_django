@@ -1,318 +1,96 @@
-## Build A Blog With Django
+# Build A SAAS with Subdomain in DJANGO using Django-Tenants
 
-#### [View the Tutorial Video](https://youtu.be/J7UOjUshjyY)
+## Setup Environment
 
--> Download [starter files for this project](https://github.com/Academy-Omen/django-blogx/tree/starter)
+1. **Create a Virtual Environment:**
 
--> Create Virtual environment
-```bash
-# Windows
-py -3 -m venv env
-# Linux and Mac
-python -m venv env
-```
+    ```bash
+    # Windows
+    py -3 -m venv env
+    # Linux and Mac
+    python -m venv env
+    ```
 
--> Activate environment
-```bash
-# Windows
-.\env\Scripts\activate
-# Linux and Mac
-source env/bin/activate
-```
+2. **Activate the Environment:**
 
--> Install Requirements
-```bash
-pip install -r requirements.txt
+    ```bash
+    # Windows
+    .\env\Scripts\activate
+    # Linux and Mac
+    source env/bin/activate
+    ```
 
-```
+3. **Install Requirements:**
 
--> Create Django project in the present directory
-```bash
-# the '.' tells python to create the project in the present folder
-django-admin startproject core .
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-```
+## Database Configuration
 
--> Create Blog app
-```bash
-python manage.py startapp blog
+4. **Configure Database in Settings.py:**
 
-```
+    In your `settings.py`, add the database configuration for multi-tenancy using Django-Tenants:
 
--> Register blog app in project settings file
-```py
-
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    # register blog here
-    'blog',
-]
-
-```
-
--> Apply migrations
-```bash
-python manage.py migrate
-
-```
-
--> Create basic views
-```py
-
-from django.shortcuts import render
-
-
-def home(request):
-    return render(request, 'index.html')
-
-
-def article(request):
-    return render(request, 'article.html')
-
-```
-
--> Create the blog app urls file
-```py
-
-from django.urls import path
-from . import views
-
-app_name = 'blog'
-
-urlpatterns = [
-    path('', views.home, name='homepage'),
-    path('post/', views.article, name='article'),
-]
-
-```
-
--> Register the blog urls file in the project urls file
-```py
-from django.contrib import admin
-from django.urls import path, include
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    # import include and add blog urls.py
-    path('', include('blog.urls', namespace='blog')),
-]
-```
-
--> Create blog app template directory in blog app directory
-```html
-<!-- Example Home page -->
-<h1>Home Page</h1>
-```
-
--> Configure static files in settings file
-```py
-import os
-
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
-
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
-
-MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-```
--> Place the css files in static/css, images in static/images and the html in blog/templates
-
-
--> Load the static files in the html files
-```html
-<!-- place this at top -->
-{% load static %}
-
-<!-- example -->
-<link rel="stylesheet" href="{% static 'css/style.css' %}"">
-```
-
--> Create Models and register to admin interface
-
-```bash
-python manage.py makemigrations
-python manage.py migrate
-#  create superuser
-python manage.py createsuperuser
-python manage.py runserver
-```
-```py
-
-# blog admin.py file
-from django.contrib import admin
-from . import models
-
-
-admin.site.register(models.Tag)
-admin.site.register(models.Profile)
-
-
-
-@admin.register(models.Article)
-class ArticleAdmin(admin.ModelAdmin):
-    list_display = ('headline', 'status', 'slug', 'author')
-    prepopulated_fields = {'slug': ('headline',), }
-
-```
-
--> Tell django where to get static files in development
-```py
-# core.urls.py
-from django.conf.urls.static import static
-from django.conf import settings
-
-# .
-# .
-
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-```
-
--> Add ckeditor to installed app and add the settings
-```py
-# settings.py
-INSTALLED_APPS = [
-
-# .
-# .
-
-    'ckeditor',
-    'ckeditor_uploader',
-]
-
-# CKEditor settigs
-
-CKEDITOR_UPLOAD_PATH = 'uploads/'
-
-CKEDITOR_CONFIGS = {
-    'default': {
-        'toolbar': 'full',
-        'height': 300,
-        'width': '100%',
-    },
-}
-```
-
--> Add ckeditor urls
-```py
-# core.urls.py
-# .
-# .
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('blog.urls', namespace='blog')),
-    path('ckeditor/', include('ckeditor_uploader.urls')),
-]
-
-```
-
--> Collect statics all static so as to copy ckeditor required media files
-```bash
-python manage.py collectstatic
-```
-
--> Add content to your database
-
--> Update home views and add load data on template
-
-```py
-
-def home(request):
-
-    # feature articles on the home page
-    featured = Article.articlemanager.filter(featured=True)[0:3]
-
-    context = {
-        'articles': featured
+    ```python
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django_tenants.postgresql_backend',
+            'NAME': 'DB name',
+            'USER': 'postgres',
+            'PASSWORD': 'PWD your password',
+            'HOST': 'localhost',
+            'POST': '5432'
+        }
     }
-
-    return render(request, 'index.html', context)
-```
-
--> Update articles views and add load data on template
-
-```py
-# Django Q objects use to create complex queries
-from django.db.models import Q
-
-def articles(request):
-
-    # get query from request
-    query = request.GET.get('query')
-    # print(query)
-    # Set query to '' if None
-    if query == None:
-        query = ''
-
-    # articles = Article.articlemanager.all()
-    # search for query in headline, sub headline, body
-    articles = Article.articlemanager.filter(
-        Q(headline__icontains=query) |
-        Q(sub_headline__icontains=query) |
-        Q(body__icontains=query)
+    DATABASE_ROUTERS = (
+        'django_tenants.routers.TenantSyncRouter',
     )
+    ```
 
-    tags = Tag.objects.all()
+5. **Apply Migrations:**
 
-    context = {
-        'articles': articles,
-        'tags': tags,
-    }
+    ```bash
+    python manage.py migrate
+    ```
 
-    return render(request, 'articles.html', context)
-```
+## Create Models and Admin Interface
 
--> Add get_absolute_url to Article model which will be used to get a single article
-```py
+6. **Create Models and Register with Admin Interface:**
 
-# models.py file
+    Define your models and register them with the admin interface:
 
-    def get_absolute_url(self):
-        return reverse('blog:article', args=[self.slug])
+    ```bash
+    python manage.py makemigrations
+    python manage.py migrate
+    python manage.py createsuperuser
+    python manage.py runserver
+    ```
 
-    class Meta:
-        ordering = ('-publish',)
-```
+7. **Collect Static Files:**
 
--> Update the blog urls file
-```py
-# .
-# .
+    Collect static files to include CKEditor required media files:
 
-urlpatterns = [
-    path('', views.home, name='home'),
-    path('articles/', views.articles, name='articles'),
+    ```bash
+    python manage.py collectstatic
+    ```
 
-    # update the article url
-    path('<slug:article>/', views.article, name='article'),
-]
+## Populate the Database
 
-# .
-# .
-```
+8. **Add Content to Your Database:**
 
--> Update articles views and add load data on template
-```py
+    Populate your database with the necessary content.
 
-def article(request, article):
+9. **Create Blog Pages:**
 
-    article = get_object_or_404(Article, slug=article, status='published')
+    Use the "Create Blog Page" feature to create multiple subdomains and style them as needed.
 
-    context = {
-        'article': article
-    }
+## Conclusion
 
-    return render(request, 'article.html', context)
-    
-```
+You've successfully set up a SaaS application with subdomain support using Django and Django-Tenants. Explore the possibilities of your new application!
+
+For more details and advanced configurations, check the documentation.
+
+---
+
+Feel free to further enhance the styling by adding headers, lists, code blocks, and other Markdown elements as needed. You can also include screenshots, diagrams, or additional sections to provide more information about your project.
