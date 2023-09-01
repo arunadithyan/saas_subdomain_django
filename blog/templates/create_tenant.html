@@ -1,0 +1,18 @@
+<!-- create_tenant.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Tenant</title>
+</head>
+<body>
+    <h1>Create a New Tenant</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Display form fields -->
+        {{ form.as_p }}
+        
+        <button type="submit">Create Tenant</button>
+    </form>
+</body>
+</html>
