@@ -116,10 +116,10 @@ DATABASES = {
         # Tenant Engine
         'ENGINE': 'django_tenants.postgresql_backend',
         # set database name
-        'NAME': 'aadhi',
+        'NAME': 'yourdb',
         # set your user details
         'USER': 'postgres',
-        'PASSWORD': 'Arun@9976761374',
+        'PASSWORD': 'your password',
         'HOST': 'localhost',
         'POST': '5432'
     }
