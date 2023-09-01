@@ -87,10 +87,8 @@
 
 ## Conclusion
 
-You've successfully set up a SaaS application with subdomain support using Django and Django-Tenants. Explore the possibilities of your new application!
+successfully set up a SaaS application with subdomain support using Django and Django-Tenants. 
 
 For more details and advanced configurations, check the documentation.
 
 ---
-
-Feel free to further enhance the styling by adding headers, lists, code blocks, and other Markdown elements as needed. You can also include screenshots, diagrams, or additional sections to provide more information about your project.
